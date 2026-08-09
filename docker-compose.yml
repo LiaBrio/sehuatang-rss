@@ -1,0 +1,25 @@
+services:
+  sehuatang-rss:
+    build: .
+    container_name: sehuatang-rss
+    ports:
+      - "8000:8000"
+    environment:
+      - BASE_URL=https://sehuatang.org
+      - CACHE_TTL=900
+      - REQUEST_TIMEOUT=30
+      # 可选：注入浏览器 cookie 绕过 Cloudflare
+      # 来源：浏览器 DevTools → Application → Cookies → 复制所有 cookie 拼接
+      # - SESSION_COOKIE=your_cookie_here
+    volumes:
+      - safeid-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8000/health"]
+      interval: 60s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+
+volumes:
+  safeid-data:
