@@ -14,7 +14,10 @@ PAGE_DESCRIPTION = (
 INTRO_TEXT = (
     "本站提供论坛板块的 RSS 订阅地址。请把本站链接加入阅读器；"
     "下方的来源站点只用来说明这些板块对应哪一个论坛。"
+    "同一批板块也可以从板块浏览页打开，地址是 /browse。"
 )
+BROWSE_PATH = "/browse"
+BROWSE_LABEL = "板块浏览"
 SUBSCRIBE_STEPS = (
     "从下方目录选择一个板块，复制对应链接。",
     "在 RSS 阅读器中添加订阅，并粘贴该链接。目录中的地址以 /rss/ 开头；阅读器里请使用带本站域名的完整地址。",
@@ -45,6 +48,18 @@ body {
   overflow-wrap: anywhere;
 }
 header p { margin: 0.75rem 0 0; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.site-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid #c8c8c8;
+  border-radius: 0.375rem;
+  color: #0848a8;
+  text-decoration: none;
+}
+.site-nav a[aria-current="page"] { border-color: #0848a8; font-weight: 600; }
 h1 { margin: 0; font-size: 1.5rem; line-height: 1.3; font-weight: 700; }
 h2 { margin: 1.75rem 0 0.5rem; font-size: 1.125rem; line-height: 1.35; font-weight: 600; }
 ol, ul.notes { margin: 0.25rem 0 0; padding-left: 1.25rem; }
@@ -186,6 +201,10 @@ def render_homepage(
 <header>
 <h1>{_esc(PAGE_TITLE)}</h1>
 <p>{_esc(INTRO_TEXT)}</p>
+<nav class="site-nav" aria-label="站点页面">
+<a href="/" aria-current="page">订阅目录</a>
+<a href="{_esc(BROWSE_PATH)}">{_esc(BROWSE_LABEL)}</a>
+</nav>
 </header>
 <main>
 <section aria-labelledby="subscribe-heading">

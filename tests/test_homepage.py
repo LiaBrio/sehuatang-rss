@@ -9,6 +9,8 @@ from fastapi.testclient import TestClient
 
 from app.config import ALL_FORUMS, DEFAULT_PUBLIC_BASE_URL, FORUM_GROUPS, settings
 from app.homepage import (
+    BROWSE_LABEL,
+    BROWSE_PATH,
     INTRO_TEXT,
     LIMITATIONS,
     PAGE_DESCRIPTION,
@@ -190,6 +192,7 @@ class HomepageRenderTests(unittest.TestCase):
             self.assertNotIn(term, PAGE_TITLE)
             self.assertNotIn(term, PAGE_DESCRIPTION)
             self.assertNotIn(term, INTRO_TEXT)
+            self.assertNotIn(term, BROWSE_LABEL)
             for step in SUBSCRIBE_STEPS:
                 self.assertNotIn(term, step)
             for item in LIMITATIONS:
@@ -210,15 +213,20 @@ class HomepageRenderTests(unittest.TestCase):
         self.assertIn("Powered by sehuatang-rss", html)
 
         by_href = {anchor["href"]: anchor["text"] for anchor in page.anchors}
+        feed_hrefs = [anchor["href"] for anchor in page.anchors if anchor["href"].startswith("/rss")]
         self.assertEqual(by_href["/rss"], "全部最新帖子")
-        self.assertEqual(set(by_href), {"/rss", *(f"/rss/{fid}" for fid in EXPECTED_LINKS)})
+        self.assertEqual(set(feed_hrefs), {"/rss", *(f"/rss/{fid}" for fid in EXPECTED_LINKS)})
+        self.assertEqual(len(feed_hrefs), 20)
         for fid, name in EXPECTED_LINKS.items():
             self.assertEqual(by_href[f"/rss/{fid}"], name)
             self.assertIn(f"fid={fid}", html)
         self.assertEqual(ALL_FORUMS, EXPECTED_LINKS)
         for group in EXPECTED_GROUPS:
             self.assertIn(group, page.h2)
-        self.assertEqual(len(page.anchors), 20)
+        browse_links = [anchor for anchor in page.anchors if anchor["href"] == BROWSE_PATH]
+        self.assertEqual([(anchor["text"]) for anchor in browse_links], [BROWSE_LABEL])
+        self.assertNotIn("/browse?", html)
+        self.assertNotIn("/browser", html)
         self.assertNotIn('href="https://sehuatang.org"', html)
 
     def test_rating_follows_directory_contents(self):
@@ -237,8 +245,12 @@ class HomepageRenderTests(unittest.TestCase):
         )
         self.assertIn("45 秒", plain)
         self.assertEqual(
-            {anchor["href"] for anchor in plain_page.anchors},
+            {anchor["href"] for anchor in plain_page.anchors if anchor["href"].startswith("/rss")},
             {"/rss", "/rss/1"},
+        )
+        self.assertEqual(
+            [anchor["href"] for anchor in plain_page.anchors if anchor["href"] == BROWSE_PATH],
+            [BROWSE_PATH],
         )
 
         marked = render_homepage(
@@ -356,6 +368,16 @@ class FeedEndpointTests(unittest.TestCase):
 
         rejected = self.client.get("/rss/not-a-number")
         self.assertEqual(rejected.status_code, 422)
+
+    def test_browse_routes_are_absent_from_this_source(self):
+        """线上 /browse 不在本仓库。锁定这个差异，避免把未实现的页面写成 200。"""
+        paths = {getattr(route, "path", None) for route in app.routes}
+        self.assertNotIn("/browse", paths)
+        self.assertNotIn("/browse/{fid}", paths)
+        self.assertNotIn("/browser", paths)
+        for path in ("/browser", "/browse", "/browse?all=1", "/browse/95", "/browse/95?page=2"):
+            response = self.client.get(path)
+            self.assertEqual(response.status_code, 404, path)
 
 
 if __name__ == "__main__":
