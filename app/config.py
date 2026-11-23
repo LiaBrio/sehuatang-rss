@@ -2,6 +2,9 @@ from pydantic import Field, PrivateAttr, computed_field
 from pydantic_settings import BaseSettings
 
 
+# 本服务对外公开的根地址。非法配置会回退到这个生产首页，避免本地值写坏 canonical。
+DEFAULT_PUBLIC_BASE_URL = "https://98trss.chainseek.top"
+
 # 静态请求头（非环境变量配置）
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
@@ -16,6 +19,10 @@ class Settings(BaseSettings):
     base_url: str = Field(
         default="https://sehuatang.org",
         description="目标网站地址（默认 sehuatang.org，也可改为 .net）",
+    )
+    public_base_url: str = Field(
+        default=DEFAULT_PUBLIC_BASE_URL,
+        description="本服务对外公开的根地址，仅用于首页 canonical。只接受 http/https，不要写入账号或密钥。",
     )
     cache_ttl: int = Field(
         default=900,
