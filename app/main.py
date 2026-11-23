@@ -2,7 +2,8 @@ import asyncio
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response, HTMLResponse
-from app.config import BASE_URL, FORUM_GROUPS, ALL_FORUMS
+from app.config import ALL_FORUMS
+from app.homepage import render_homepage
 from app.scraper import fetch_forum_threads, fetch_thread_detail
 from app.rss_generator import generate_rss_feed
 
@@ -30,29 +31,8 @@ async def _fetch_all_details(threads: list[dict]) -> dict[int, dict]:
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    """首页：列出所有可用板块及 RSS 链接"""
-    html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>色花堂 RSS</title>'
-    html += '<style>body{font-family:sans-serif;max-width:800px;margin:40px auto;padding:0 20px}'
-    html += 'h1{color:#333}h2{color:#666;margin-top:30px}'
-    html += 'ul{list-style:none;padding:0}li{margin:8px 0}'
-    html += 'a{color:#0066cc;text-decoration:none}a:hover{text-decoration:underline}'
-    html += '.badge{background:#eee;padding:2px 8px;border-radius:4px;font-size:12px;margin-left:8px}'
-    html += '</style></head><body>'
-    html += '<h1>🌸 色花堂 RSS 订阅源</h1>'
-    html += f'<p>基础地址: {BASE_URL}</p>'
-    html += '<h2>📰 全部最新帖子</h2>'
-    html += '<ul><li><a href="/rss">全部最新帖子</a></li></ul>'
-
-    for group_name, forums in FORUM_GROUPS.items():
-        html += f'<h2>{group_name}</h2><ul>'
-        for fid, name in forums.items():
-            html += f'<li><a href="/rss/{fid}">{name}</a>'
-            html += f'<span class="badge">fid={fid}</span></li>'
-        html += '</ul>'
-
-    html += '<hr><p style="color:#999;font-size:12px">Powered by sehuatang-rss</p>'
-    html += '</body></html>'
-    return html
+    """首页：列出所有可用板块及 RSS 链接。"""
+    return render_homepage()
 
 
 @app.get("/rss")

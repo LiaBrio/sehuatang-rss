@@ -70,6 +70,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 | 环境变量 | 默认值 | 说明 |
 |----------|--------|------|
 | `BASE_URL` | `https://sehuatang.org` | 目标网站地址 |
+| `PUBLIC_BASE_URL` | `https://98trss.chainseek.top` | 首页 canonical 使用的本站公开根地址 |
 | `CACHE_TTL` | `900` | 缓存过期时间（秒） |
 | `REQUEST_TIMEOUT` | `30` | HTTP 请求超时（秒） |
 | `SESSION_COOKIE` | 空 | 可选，手动注入浏览器 cookie |
